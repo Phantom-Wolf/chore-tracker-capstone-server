@@ -19,7 +19,7 @@ app.use(helmet());
 // body
 
 app.get('/', (req, res) => {
-	res.send('Hello, boilerplate!');
+	res.send('Hello, Chore Tracker!');
 });
 
 // error handling
