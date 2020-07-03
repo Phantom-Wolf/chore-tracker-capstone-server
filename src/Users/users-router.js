@@ -1,40 +1,41 @@
 // imports
 
-const express = require('express');
-const xss = require('xss');
-const UsersService = require('./users-service');
-const path = require('path');
+const express = require("express");
+const xss = require("xss");
+const UsersService = require("./users-service");
+const path = require("path");
 
 // middleware
 
 const usersRouter = express.Router();
 const jsonParser = express.json();
 
-const serializeFolder = (user) => ({
+const serializeUser = (user) => ({
 	id: user.id,
-    user_email: xss(user.user_email),
-    user_password: xss(user.user_password)
+	user_email: xss(user.user_email),
+	user_password: xss(user.user_password),
 });
 
 // body
 
 usersRouter
-	.route('/')
+	.route("/")
 	.get((req, res, next) => {
-		const knexInstance = req.app.get('db');
-		FoldersService.getAllFolders(knexInstance)
-			.then((folders) => {
-				res.json(folders.map(serializeFolder));
+		const knexInstance = req.app.get("db");
+		UsersService.getAllUers(knexInstance)
+			.then((users) => {
+				res.json(users.map(serializeUser));
 			})
 			.catch(next);
 	})
 	.post(jsonParser, (req, res, next) => {
-		const { folder_name } = req.body;
-		const newFolder = {
-			folder_name,
+		const { user_email, user_password } = req.body;
+		const newUser = {
+			user_email,
+			user_password,
 		};
 
-		for (const [key, value] of Object.entries(newFolder))
+		for (const [key, value] of Object.entries(newUser))
 			if (value == null)
 				return res.status(400).json({
 					error: {
@@ -42,62 +43,57 @@ usersRouter
 					},
 				});
 
-		FoldersService.insertFolder(req.app.get('db'), newFolder)
-			.then((folder) => {
-				res.status(201)
-					.location(path.posix.join(req.originalUrl, `/${folder.id}`))
-					.json(serializeFolder(folder));
+		UsersService.insertUser(req.app.get("db"), newUser)
+			.then((user) => {
+				res
+					.status(201)
+					.location(path.posix.join(req.originalUrl, `/${user.id}`))
+					.json(serializeFolder(user));
 			})
 			.catch(next);
 	});
 
-foldersRouter
-	.route('/:folder_id')
+UsersRouter.route("/:user_id")
 	.all((req, res, next) => {
-		const knexInstance = req.app.get('db');
-		FoldersService.getById(knexInstance, req.params.folder_id)
-			.then((folder) => {
-				if (!folder) {
+		const knexInstance = req.app.get("db");
+		UsersService.getById(knexInstance, req.params.user_id)
+			.then((user) => {
+				if (!user) {
 					return res.status(404).json({
 						error: {
-							message: `folder doesn't exist`,
+							message: `user doesn't exist`,
 						},
 					});
 				}
-				res.folder = folder;
+				res.user = user;
 				next();
 			})
 			.catch(next);
 	})
 	.get((req, res, next) => {
-		res.json(serializeFolder(res.folder));
+		res.json(serializeUser(res.user));
 	})
 	.delete((req, res, next) => {
-		FoldersService.deleteFolder(req.app.get('db'), req.params.folder_id)
+		UsersService.deleteUser(req.app.get("db"), req.params.user_id)
 			.then(() => {
 				res.status(204).end();
 			})
 			.catch(next);
 	})
 	.patch(jsonParser, (req, res, next) => {
-		const { folder_name } = req.body;
-		const folderToUpdate = { folder_name };
+		const { user_email, user_password } = req.body;
+		const userToUpdate = { user_email, user_password };
 
-		const numberOfValues = Object.values(folderToUpdate).filter(Boolean)
-			.length;
+		const numberOfValues = Object.values(userToUpdate).filter(Boolean).length;
 		if (numberOfValues === 0) {
 			return res.status(400).json({
 				error: {
-					message: `Request body must contain 'folder_name'`,
+					message: `Request body must contain 'user_email' or 'user_password'`,
 				},
 			});
 		}
 
-		FoldersService.updateFolder(
-			req.app.get('db'),
-			req.params.folder_id,
-			folderToUpdate
-		)
+		UsersService.updateUser(req.app.get("db"), req.params.user_id, userToUpdate)
 			.then((numRowsAffected) => {
 				res.status(204).end();
 			})
