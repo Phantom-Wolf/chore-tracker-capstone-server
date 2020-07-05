@@ -22,7 +22,7 @@ usersRouter
 	.route("/")
 	.get((req, res, next) => {
 		const knexInstance = req.app.get("db");
-		UsersService.getAllUers(knexInstance)
+		UsersService.getAllUsers(knexInstance)
 			.then((users) => {
 				res.json(users.map(serializeUser));
 			})
@@ -48,12 +48,12 @@ usersRouter
 				res
 					.status(201)
 					.location(path.posix.join(req.originalUrl, `/${user.id}`))
-					.json(serializeFolder(user));
+					.json(serializeUser(user));
 			})
 			.catch(next);
 	});
 
-UsersRouter.route("/:user_id")
+	usersRouter.route("/:user_id")
 	.all((req, res, next) => {
 		const knexInstance = req.app.get("db");
 		UsersService.getById(knexInstance, req.params.user_id)
