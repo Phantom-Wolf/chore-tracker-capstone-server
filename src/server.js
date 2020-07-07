@@ -16,5 +16,5 @@ app.set("db", db);
 // server
 
 app.listen(PORT, () => {
-	// console.log(`Server listening at http://localhost:${PORT}`);
+	console.log(`Server listening at http://localhost:${PORT}`);
 });

@@ -1,5 +1,5 @@
 const EventsService = {
-	insertUser(knex, newEvent) {
+	insertEvent(knex, newEvent) {
 		return knex
 			.insert(newEvent)
 			.into("events")
@@ -8,8 +8,8 @@ const EventsService = {
 				return rows[0];
 			});
 	},
-	getAllEvents(knex) {
-		return knex.select("*").from("events");
+	getAllEvents(knex, id) {
+		return knex.from("events").select("*").where("user_id", id);
 	},
 	getById(knex, id) {
 		return knex.from("events").select("*").where("id", id).first();
@@ -21,4 +21,4 @@ const EventsService = {
 		return knex.from("events").where({ id }).update(newEventFields);
 	},
 };
-EventsService;
+module.exports = EventsService;

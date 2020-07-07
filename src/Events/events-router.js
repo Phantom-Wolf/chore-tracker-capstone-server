@@ -11,14 +11,14 @@ const eventsRouter = express.Router();
 const jsonParser = express.json();
 
 const serializeEvent = (event) => ({
-    id: event.id,
+	id: event.id,
 	event_id: event.event_id,
-    title: xss(event.title),
-    notes: xss(event.notes),
-    recurrence: event.recurrence,
-    recurrence_specifics: event.recurrence_specifics,
-    date_created: event.date_created,
-    date_ended: event.date_ended,
+	title: xss(event.title),
+	notes: xss(event.notes),
+	recurrence: event.recurrence,
+	recurrence_specifics: event.recurrence_specifics,
+	date_created: event.date_created,
+	date_ended: event.date_ended,
 });
 
 // body
@@ -34,10 +34,26 @@ eventsRouter
 			.catch(next);
 	})
 	.post(jsonParser, (req, res, next) => {
-		const { user_id, title, notes, recurrence, recurrence_specifics, date_created, date_ended  } = req.body;
+		console.log(req.body);
+		const {
+			user_id,
+			title,
+			notes,
+			recurrence,
+			recurrence_specifics,
+			date_created,
+			date_ended,
+		} = req.body;
 		const newEvent = {
-			user_id, title, notes, recurrence, recurrence_specifics, date_created, date_ended 
+			user_id,
+			title,
+			notes,
+			recurrence,
+			recurrence_specifics,
+			date_created,
+			date_ended,
 		};
+		console.log("newEvent", newEvent);
 
 		for (const [key, value] of Object.entries(newEvent))
 			if (value == null)
@@ -47,8 +63,15 @@ eventsRouter
 					},
 				});
 
-                EventsService.insertEvent(req.app.get("db"), newEvent)
+		EventsService.insertEvent(req.app.get("db"), newEvent)
 			.then((event) => {
+				// TasksService.insertTask(req.app.get("db"), newTask)
+				// .then((task) => {
+				// 	res
+				// 		.status(201)
+				// 		.json(serializeEvent(event));
+				// })
+				// .catch(next);
 				res
 					.status(201)
 					.location(path.posix.join(req.originalUrl, `/${event.id}`))
@@ -57,7 +80,8 @@ eventsRouter
 			.catch(next);
 	});
 
-    eventsRouter.route("/:event_id")
+eventsRouter
+	.route("/:event_id")
 	.all((req, res, next) => {
 		const knexInstance = req.app.get("db");
 		EventsService.getById(knexInstance, req.params.event_id)
@@ -85,8 +109,24 @@ eventsRouter
 			.catch(next);
 	})
 	.patch(jsonParser, (req, res, next) => {
-		const { user_id, title, notes, recurrence, recurrence_specifics, date_created, date_ended } = req.body;
-		const eventToUpdate = { user_id, title, notes, recurrence, recurrence_specifics, date_created, date_ended };
+		const {
+			user_id,
+			title,
+			notes,
+			recurrence,
+			recurrence_specifics,
+			date_created,
+			date_ended,
+		} = req.body;
+		const eventToUpdate = {
+			user_id,
+			title,
+			notes,
+			recurrence,
+			recurrence_specifics,
+			date_created,
+			date_ended,
+		};
 
 		const numberOfValues = Object.values(eventToUpdate).filter(Boolean).length;
 		if (numberOfValues === 0) {

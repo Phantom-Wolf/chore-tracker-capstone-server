@@ -21,4 +21,4 @@ const TasksService = {
 		return knex.from("tasks").where({ id }).update(newTaskFields);
 	},
 };
-TasksService;
+module.exports = TasksService;

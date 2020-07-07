@@ -21,4 +21,4 @@ const UsersService = {
 		return knex.from("users").where({ id }).update(newUserFields);
 	},
 };
-UsersService;
+module.exports = UsersService;
