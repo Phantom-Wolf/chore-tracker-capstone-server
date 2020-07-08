@@ -3,6 +3,7 @@
 const express = require("express");
 const xss = require("xss");
 const EventsService = require("./events-service");
+const TasksService = require("../Tasks/tasks-service");
 const path = require("path");
 
 // middleware
@@ -65,13 +66,22 @@ eventsRouter
 
 		EventsService.insertEvent(req.app.get("db"), newEvent)
 			.then((event) => {
-				// TasksService.insertTask(req.app.get("db"), newTask)
-				// .then((task) => {
-				// 	res
-				// 		.status(201)
-				// 		.json(serializeEvent(event));
-				// })
-				// .catch(next);
+				console.log("event", event);
+				let newTask = {
+					event_id: event.id,
+					date_of_task: event.date_created,
+					task_status: false,
+					task_completion_date: null,
+				};
+				console.log("newTask", newTask);
+
+				TasksService.insertTask(req.app.get("db"), newTask)
+					.then((task) => {
+						// res.status(201).json(task);
+						console.log("task", task);
+					})
+					.catch(next);
+
 				res
 					.status(201)
 					.location(path.posix.join(req.originalUrl, `/${event.id}`))
