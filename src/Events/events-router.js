@@ -5,11 +5,99 @@ const xss = require("xss");
 const EventsService = require("./events-service");
 const TasksService = require("../Tasks/tasks-service");
 const path = require("path");
+const { requireAuth } = require("../middleware/jwt-auth");
 
 // middleware
 
 const eventsRouter = express.Router();
 const jsonParser = express.json();
+
+// function
+function setWeekday(date, dayOfWeekText) {
+	if (dayOfWeekText == "Monday") {
+		dayOfWeekNumerical = 1;
+	} else if (dayOfWeekText == "Tuesday") {
+		dayOfWeekNumerical = 2;
+	} else if (dayOfWeekText == "Wednesday") {
+		dayOfWeekNumerical = 3;
+	} else if (dayOfWeekText == "Thursday") {
+		dayOfWeekNumerical = 4;
+	} else if (dayOfWeekText == "Friday") {
+		dayOfWeekNumerical = 5;
+	} else if (dayOfWeekText == "Saturday") {
+		dayOfWeekNumerical = 6;
+	} else if (dayOfWeekText == "Sunday") {
+		dayOfWeekNumerical = 7;
+	}
+
+	date = new Date(date.getTime());
+	date.setDate(date.getDate() + ((dayOfWeekNumerical + 7 - date.getDay()) % 7));
+	return date;
+}
+
+function setWeekly(date, followingWeekText) {
+	if (followingWeekText == "Week 1") {
+		followingWeekNumerical = 7;
+	} else if (followingWeekText == "Week 2") {
+		followingWeekNumerical = 14;
+	} else if (followingWeekText == "Week 3") {
+		followingWeekNumerical = 21;
+	} else if (followingWeekText == "Week 4") {
+		followingWeekNumerical = 28;
+	} else if (followingWeekText == "Week 5") {
+		followingWeekNumerical = 35;
+	}
+
+	date = new Date(date.getTime());
+	date.setDate(date.getDate() + followingWeekNumerical);
+	return date;
+}
+
+function setMonthly(date, followingMonthText) {
+	if (followingMonthText == "January") {
+		followingMonthNumerical = 1;
+	} else if (followingMonthText == "Febraury") {
+		followingMonthNumerical = 2;
+	} else if (followingMonthText == "March") {
+		followingMonthNumerical = 3;
+	} else if (followingMonthText == "April") {
+		followingMonthNumerical = 4;
+	} else if (followingMonthText == "May") {
+		followingMonthNumerical = 5;
+	} else if (followingMonthText == "June") {
+		followingMonthNumerical = 6;
+	} else if (followingMonthText == "July") {
+		followingMonthNumerical = 7;
+	} else if (followingMonthText == "August") {
+		followingMonthNumerical = 8;
+	} else if (followingMonthText == "September") {
+		followingMonthNumerical = 9;
+	} else if (followingMonthText == "October") {
+		followingMonthNumerical = 10;
+	} else if (followingMonthText == "November") {
+		followingMonthNumerical = 11;
+	} else if (followingMonthText == "December") {
+		followingMonthNumerical = 12;
+	}
+
+	date = new Date(date.getTime());
+	let currentMonth = date.getMonth();
+	let dateOutput = new Date(new Date(date.getFullYear(), date.getMonth(), 1));
+	if ((currentMonth = 11)) {
+		dateOuput = date.setDate(date.getDate() + followingMonthNumerical);
+	} else {
+		dateOuput = date.setMonth(dateOutput + followingMonthNumerical);
+	}
+
+	// var now = new Date();
+	// if (now.getMonth() == 11) {
+	// 	var current = new Date(now.getFullYear() + 1, 0, 1);
+	// } else {
+	// 	var current = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+	// }
+
+	return dateOutput;
+}
 
 const serializeEvent = (event) => ({
 	id: event.id,
@@ -26,6 +114,7 @@ const serializeEvent = (event) => ({
 
 eventsRouter
 	.route("/")
+	.all(requireAuth)
 	.get((req, res, next) => {
 		const knexInstance = req.app.get("db");
 		EventsService.getAllEvents(knexInstance)
@@ -34,19 +123,10 @@ eventsRouter
 			})
 			.catch(next);
 	})
-	.post(jsonParser, (req, res, next) => {
-		console.log(req.body);
-		const {
-			user_id,
-			title,
-			notes,
-			recurrence,
-			recurrence_specifics,
-			date_created,
-			date_ended,
-		} = req.body;
+	.post(requireAuth, jsonParser, (req, res, next) => {
+		// console.log(req.body);
+		const { title, notes, recurrence, recurrence_specifics, date_created, date_ended } = req.body;
 		const newEvent = {
-			user_id,
 			title,
 			notes,
 			recurrence,
@@ -54,7 +134,7 @@ eventsRouter
 			date_created,
 			date_ended,
 		};
-		console.log("newEvent", newEvent);
+		// console.log("newEvent", newEvent);
 
 		for (const [key, value] of Object.entries(newEvent))
 			if (value == null)
@@ -64,23 +144,132 @@ eventsRouter
 					},
 				});
 
+		newEvent.user_id = req.user.id;
+
+		console.log(newEvent.user_id);
+
 		EventsService.insertEvent(req.app.get("db"), newEvent)
 			.then((event) => {
 				console.log("event", event);
-				let newTask = {
-					event_id: event.id,
-					date_of_task: event.date_created,
-					task_status: false,
-					task_completion_date: null,
-				};
-				console.log("newTask", newTask);
+				let recurrenceSpecificsSanitized1 = event.recurrence_specifics.replace("[", "");
+				let recurrenceSpecificsSanitized2 = recurrenceSpecificsSanitized1.replace("]", "");
+				let recurrenceSpecificsSanitized = recurrenceSpecificsSanitized2.replace(/"/g, "");
+				let recurrenceSpecificsSanitizedArray = recurrenceSpecificsSanitized.split(",");
 
-				TasksService.insertTask(req.app.get("db"), newTask)
-					.then((task) => {
-						// res.status(201).json(task);
-						console.log("task", task);
-					})
-					.catch(next);
+				// **********weekday reccurence**********
+				if (event.recurrence == 1) {
+					console.log("weekday", recurrenceSpecificsSanitizedArray);
+
+					// create a for loop for recurrenceSpecificsSanitizedArray
+
+					// reate a function setweekly and setmonthly to calculate reccurence for other categories
+					// add them to db
+					// create a wrapping loop to generate tasks between start date and end date
+
+					for (let i = 0; i < recurrenceSpecificsSanitizedArray.length; i++) {
+						// take the weekday recurrence value
+
+						console.log(`weekday for loop ${i}`, recurrenceSpecificsSanitizedArray[i]);
+
+						// calculate next date of task based on recurrence value above
+
+						let weekdayForDB = setWeekday(event.date_created, recurrenceSpecificsSanitizedArray[i]);
+						console.log("weekdayForDB", weekdayForDB);
+
+						//add new event to DB
+
+						TasksService.insertTask(req.app.get("db"), {
+							event_id: event.id,
+							date_of_task: weekdayForDB,
+							task_status: false,
+							task_completion_date: null,
+						})
+							.then((task) => {
+								// res.status(201).json(task);
+								// console.log("task", task);
+							})
+							.catch(next);
+					}
+				}
+
+				// **********weekly reccurence**********
+				else if (event.recurrence == 2) {
+					console.log("weekly", recurrenceSpecificsSanitizedArray);
+
+					// create a for loop for recurrenceSpecificsSanitizedArray
+
+					for (let i = 0; i < recurrenceSpecificsSanitizedArray.length; i++) {
+						// take the weekday recurrence value
+
+						console.log(`weekly for loop ${i}`, recurrenceSpecificsSanitizedArray[i]);
+
+						// calculate next date of task based on recurrence value above
+
+						let weeklyForDB = setWeekly(event.date_created, recurrenceSpecificsSanitizedArray[i]);
+						console.log("weeklyForDB", weeklyForDB);
+
+						//add new event to DB
+
+						TasksService.insertTask(req.app.get("db"), {
+							event_id: event.id,
+							date_of_task: weeklyForDB,
+							task_status: false,
+							task_completion_date: null,
+						})
+							.then((task) => {
+								// res.status(201).json(task);
+								// console.log("task", task);
+							})
+							.catch(next);
+					}
+				}
+
+				// **********monthly reccurence**********
+				else {
+					console.log("monthly", recurrenceSpecificsSanitizedArray);
+
+					// create a for loop for recurrenceSpecificsSanitizedArray
+
+					for (let i = 0; i < recurrenceSpecificsSanitizedArray.length; i++) {
+						// take the weekday recurrence value
+
+						console.log(`monthly for loop ${i}`, recurrenceSpecificsSanitizedArray[i]);
+
+						// calculate next date of task based on recurrence value above
+
+						let monthlyForDB = setMonthly(event.date_created, recurrenceSpecificsSanitizedArray[i]);
+						console.log("monthlyForDB", monthlyForDB);
+
+						//add new event to DB
+
+						TasksService.insertTask(req.app.get("db"), {
+							event_id: event.id,
+							date_of_task: monthlyForDB,
+							task_status: false,
+							task_completion_date: null,
+						})
+							.then((task) => {
+								// res.status(201).json(task);
+								// console.log("task", task);
+							})
+							.catch(next);
+					}
+				}
+
+				// let newTask = {
+				// 	event_id: event.id,
+				// 	date_of_task: event.date_created,
+				// 	task_status: false,
+				// 	task_completion_date: null,
+				// };
+				// console.log("newTask", newTask);
+
+				// TasksService.insertTask(req.app.get("db"), newTask)
+				// 	.then((task) => {
+				// 		res.status(201).json(task);
+				// 		console.log("task", task);
+				// 	})
+				// 	.catch(next);
 
 				res
 					.status(201)
@@ -92,6 +281,7 @@ eventsRouter
 
 eventsRouter
 	.route("/:event_id")
+	.all(requireAuth)
 	.all((req, res, next) => {
 		const knexInstance = req.app.get("db");
 		EventsService.getById(knexInstance, req.params.event_id)
@@ -155,3 +345,18 @@ eventsRouter
 	});
 
 module.exports = eventsRouter;
+
+// let cycleStartDate = newEvent.date_created
+// let cycleEndDate;
+
+// if (newEvent.date_created == null) {
+// 	cycleEndDate = cycleStartDate.setFullYear(cycleStartDate.getFullYear() + 1)
+// } else {
+// 	cycleEndDate = newEvent.date_ended
+// }
+
+// while(cycleStartDate < cycleEndDate) {
+// 	// run task service for loop
+// 	//then
+// 	cycleStartDate = cycleStartDate.setDate(cycleStartDate.getDate() + 7)
+// }

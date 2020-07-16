@@ -9,6 +9,7 @@ const { NODE_ENV } = require("./config");
 const usersRouter = require("./Users/users-router");
 const eventsRouter = require("./Events/events-router");
 const tasksRouter = require("./Tasks/tasks-router");
+const authRouter = require("./auth/auth-router");
 
 const app = express();
 
@@ -28,6 +29,7 @@ app.get("/", (req, res) => {
 app.use("/api/users", usersRouter);
 app.use("/api/events", eventsRouter);
 app.use("/api/tasks", tasksRouter);
+app.use("/api/auth", authRouter);
 
 // error handling
 
