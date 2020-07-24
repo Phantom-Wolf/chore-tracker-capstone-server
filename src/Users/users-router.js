@@ -43,17 +43,34 @@ usersRouter
 					},
 				});
 
-		UsersService.insertUser(req.app.get("db"), newUser)
-			.then((user) => {
-				res
-					.status(201)
-					.location(path.posix.join(req.originalUrl, `/${user.id}`))
-					.json(serializeUser(user));
+		const passwordError = UsersService.validatePassword(user_password);
+
+		if (passwordError) return res.status(400).json({ error: passwordError });
+
+		UsersService.hasUserWithUserEmail(req.app.get("db"), user_email)
+			.then((hasUserWithUserEmail) => {
+				if (hasUserWithUserEmail)
+					return res.status(400).json({ error: `User Email already taken` });
+
+				return UsersService.hashPassword(user_password).then((hashedPassword) => {
+					const newUser = {
+						user_email,
+						user_password: hashedPassword,
+					};
+
+					return UsersService.insertUser(req.app.get("db"), newUser).then((user) => {
+						res
+							.status(201)
+							.location(path.posix.join(req.originalUrl, `/${user.id}`))
+							.json(UsersService.serializeUser(user));
+					});
+				});
 			})
 			.catch(next);
 	});
 
-	usersRouter.route("/:user_id")
+usersRouter
+	.route("/:user_id")
 	.all((req, res, next) => {
 		const knexInstance = req.app.get("db");
 		UsersService.getById(knexInstance, req.params.user_id)

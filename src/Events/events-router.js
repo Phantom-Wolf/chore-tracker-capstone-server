@@ -54,48 +54,79 @@ function setWeekly(date, followingWeekText) {
 }
 
 function setMonthly(date, followingMonthText) {
-	if (followingMonthText == "January") {
-		followingMonthNumerical = 1;
-	} else if (followingMonthText == "Febraury") {
-		followingMonthNumerical = 2;
-	} else if (followingMonthText == "March") {
-		followingMonthNumerical = 3;
-	} else if (followingMonthText == "April") {
-		followingMonthNumerical = 4;
-	} else if (followingMonthText == "May") {
-		followingMonthNumerical = 5;
-	} else if (followingMonthText == "June") {
-		followingMonthNumerical = 6;
-	} else if (followingMonthText == "July") {
-		followingMonthNumerical = 7;
-	} else if (followingMonthText == "August") {
-		followingMonthNumerical = 8;
-	} else if (followingMonthText == "September") {
-		followingMonthNumerical = 9;
-	} else if (followingMonthText == "October") {
-		followingMonthNumerical = 10;
-	} else if (followingMonthText == "November") {
-		followingMonthNumerical = 11;
-	} else if (followingMonthText == "December") {
-		followingMonthNumerical = 12;
-	}
+	// get current month and year
 
-	date = new Date(date.getTime());
 	let currentMonth = date.getMonth();
-	let dateOutput = new Date(new Date(date.getFullYear(), date.getMonth(), 1));
-	if ((currentMonth = 11)) {
-		dateOuput = date.setDate(date.getDate() + followingMonthNumerical);
-	} else {
-		dateOuput = date.setMonth(dateOutput + followingMonthNumerical);
+	let currentYear = date.getFullYear();
+
+	// set output month and year details
+
+	let outputMonth = currentMonth;
+	let outputYear = currentYear;
+
+	// calculate month numerical value for each of the following months
+
+	if (followingMonthText == "January") {
+		followingMonthNumerical = 0;
+	} else if (followingMonthText == "February") {
+		followingMonthNumerical = 1;
+	} else if (followingMonthText == "March") {
+		followingMonthNumerical = 2;
+	} else if (followingMonthText == "April") {
+		followingMonthNumerical = 3;
+	} else if (followingMonthText == "May") {
+		followingMonthNumerical = 4;
+	} else if (followingMonthText == "June") {
+		followingMonthNumerical = 5;
+	} else if (followingMonthText == "July") {
+		followingMonthNumerical = 6;
+	} else if (followingMonthText == "August") {
+		followingMonthNumerical = 7;
+	} else if (followingMonthText == "September") {
+		followingMonthNumerical = 8;
+	} else if (followingMonthText == "October") {
+		followingMonthNumerical = 9;
+	} else if (followingMonthText == "November") {
+		followingMonthNumerical = 10;
+	} else if (followingMonthText == "December") {
+		followingMonthNumerical = 11;
 	}
 
-	// var now = new Date();
-	// if (now.getMonth() == 11) {
-	// 	var current = new Date(now.getFullYear() + 1, 0, 1);
-	// } else {
-	// 	var current = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-	// }
+	// calculate output month based on followingMonthNumerical
 
+	let timeInterval = currentMonth - followingMonthNumerical;
+	console.log(
+		"timeinterval",
+		timeInterval,
+		"currentmonth",
+		currentMonth,
+		"followingNumerical",
+		followingMonthNumerical
+	);
+	if (timeInterval < 0) {
+		// console.log("current year");
+		outputMonth = 12 - (currentMonth + parseInt(timeInterval));
+		console.log("*****current year*****", outputMonth, outputYear);
+	} else if (timeInterval == 0) {
+		// console.log("current year");
+
+		outputYear = currentYear + 1;
+		outputMonth = currentMonth;
+
+		console.log("*****current month*****", outputMonth, outputYear);
+	} else {
+		// console.log("next year");
+		outputMonth = 12 - (currentMonth + parseInt(timeInterval));
+		// if output month is going into the next year, update year as well
+
+		outputYear = currentYear + 1;
+
+		console.log("*****next year*****", outputMonth, outputYear);
+	}
+
+	// output value will be output year, month and first day of the month
+
+	let dateOutput = new Date(outputYear, outputMonth, 1);
 	return dateOutput;
 }
 
@@ -117,7 +148,10 @@ eventsRouter
 	.all(requireAuth)
 	.get((req, res, next) => {
 		const knexInstance = req.app.get("db");
-		EventsService.getAllEvents(knexInstance)
+
+		let user_id = req.user.id;
+
+		EventsService.getAllEvents(knexInstance, user_id)
 			.then((events) => {
 				res.json(events.map(serializeEvent));
 			})
@@ -156,15 +190,10 @@ eventsRouter
 				let recurrenceSpecificsSanitized = recurrenceSpecificsSanitized2.replace(/"/g, "");
 				let recurrenceSpecificsSanitizedArray = recurrenceSpecificsSanitized.split(",");
 
-				// **********weekday reccurence**********
+				// ********************weekday reccurence********************
+
 				if (event.recurrence == 1) {
 					console.log("weekday", recurrenceSpecificsSanitizedArray);
-
-					// create a for loop for recurrenceSpecificsSanitizedArray
-
-					// reate a function setweekly and setmonthly to calculate reccurence for other categories
-					// add them to db
-					// create a wrapping loop to generate tasks between start date and end date
 
 					for (let i = 0; i < recurrenceSpecificsSanitizedArray.length; i++) {
 						// take the weekday recurrence value
@@ -192,7 +221,7 @@ eventsRouter
 					}
 				}
 
-				// **********weekly reccurence**********
+				// ********************weekly reccurence********************
 				else if (event.recurrence == 2) {
 					console.log("weekly", recurrenceSpecificsSanitizedArray);
 
@@ -224,7 +253,7 @@ eventsRouter
 					}
 				}
 
-				// **********monthly reccurence**********
+				// ********************monthly reccurence********************
 				else {
 					console.log("monthly", recurrenceSpecificsSanitizedArray);
 
