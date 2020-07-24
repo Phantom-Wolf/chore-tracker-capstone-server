@@ -95,32 +95,20 @@ function setMonthly(date, followingMonthText) {
 	// calculate output month based on followingMonthNumerical
 
 	let timeInterval = currentMonth - followingMonthNumerical;
-	console.log(
-		"timeinterval",
-		timeInterval,
-		"currentmonth",
-		currentMonth,
-		"followingNumerical",
-		followingMonthNumerical
-	);
+
 	if (timeInterval < 0) {
-		// console.log("current year");
-		outputMonth = 12 - (currentMonth + parseInt(timeInterval));
+		// outputMonth = 12 - (currentMonth + parseInt(timeInterval));
+		outputMonth = followingMonthNumerical;
 		console.log("*****current year*****", outputMonth, outputYear);
 	} else if (timeInterval == 0) {
-		// console.log("current year");
-
 		outputYear = currentYear + 1;
 		outputMonth = currentMonth;
-
 		console.log("*****current month*****", outputMonth, outputYear);
 	} else {
-		// console.log("next year");
-		outputMonth = 12 - (currentMonth + parseInt(timeInterval));
+		// outputMonth = 12 - (currentMonth + parseInt(timeInterval));
+		outputMonth = followingMonthNumerical;
 		// if output month is going into the next year, update year as well
-
 		outputYear = currentYear + 1;
-
 		console.log("*****next year*****", outputMonth, outputYear);
 	}
 
