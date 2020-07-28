@@ -13,9 +13,10 @@ const jsonParser = express.json();
 const serializeTask = (task) => ({
 	id: task.id,
 	event_id: task.event_id,
-    date_of_completion: task.date_of_completion,
-    task_status: task.task_status,
-    task_completion_date: task.task_completion_date,
+	date_of_task: task.date_of_task,
+	date_of_completion: task.date_of_completion,
+	task_status: task.task_status,
+	task_completion_date: task.task_completion_date,
 });
 
 // body
@@ -24,7 +25,8 @@ tasksRouter
 	.route("/")
 	.get((req, res, next) => {
 		const knexInstance = req.app.get("db");
-		TasksService.getAllTasks(knexInstance)
+		let event_id = req.event_id;
+		TasksService.getAllTasks(knexInstance, event_id)
 			.then((tasks) => {
 				res.json(tasks.map(serializeTask));
 			})
@@ -33,7 +35,10 @@ tasksRouter
 	.post(jsonParser, (req, res, next) => {
 		const { event_id, date_of_task, task_status, task_completion_date } = req.body;
 		const newTask = {
-			event_id, date_of_task, task_status, task_completion_date
+			event_id,
+			date_of_task,
+			task_status,
+			task_completion_date,
 		};
 
 		for (const [key, value] of Object.entries(newTask))
@@ -44,7 +49,7 @@ tasksRouter
 					},
 				});
 
-                TasksService.insertTask(req.app.get("db"), newTask)
+		TasksService.insertTask(req.app.get("db"), newTask)
 			.then((task) => {
 				res
 					.status(201)
@@ -54,7 +59,8 @@ tasksRouter
 			.catch(next);
 	});
 
-    tasksRouter.route("/:task_id")
+tasksRouter
+	.route("/:task_id")
 	.all((req, res, next) => {
 		const knexInstance = req.app.get("db");
 		TasksService.getById(knexInstance, req.params.task_id)
@@ -100,5 +106,16 @@ tasksRouter
 			})
 			.catch(next);
 	});
+
+tasksRouter.route("/tasker/:event_id").get((req, res, next) => {
+	console.log(req.params.event_id);
+	const knexInstance = req.app.get("db");
+	TasksService.getAllTasks(knexInstance, req.params.event_id)
+		.then((tasks) => {
+			res.json(tasks.map(serializeTask));
+		})
+
+		.catch(next);
+});
 
 module.exports = tasksRouter;

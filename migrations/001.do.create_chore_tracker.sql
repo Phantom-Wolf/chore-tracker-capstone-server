@@ -22,7 +22,8 @@ CREATE TABLE tasks (
         REFERENCES events(id) ON DELETE CASCADE NOT NULL,
     date_of_task TIMESTAMP NOT NULL,
     task_status BOOLEAN DEFAULT FALSE NOT NULL,
-    task_completion_date TIMESTAMP
+    task_completion_date TIMESTAMP,
+    userID INTEGER REFERENCES events(user_id) ON DELETE CASCADE NOT NULL,
 );
 
 

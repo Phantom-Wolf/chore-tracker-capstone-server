@@ -8,8 +8,8 @@ const TasksService = {
 				return rows[0];
 			});
 	},
-	getAllTasks(knex) {
-		return knex.select("*").from("tasks");
+	getAllTasks(knex, event_id) {
+		return knex.select("*").from("tasks").where("event_id", event_id);
 	},
 	getById(knex, id) {
 		return knex.from("tasks").select("*").where("id", id).first();
