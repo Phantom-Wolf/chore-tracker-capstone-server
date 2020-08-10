@@ -23,7 +23,7 @@ app.use(helmet());
 // body
 
 app.get("/", (req, res) => {
-	res.send("Hello, Chore Tracker!");
+	res.send("Hello, recTask!");
 });
 
 app.use("/api/users", usersRouter);
@@ -38,7 +38,6 @@ app.use(function errorHandler(error, req, res, next) {
 	if (NODE_ENV === "production") {
 		response = { error: { message: "server error" } };
 	} else {
-		
 		response = { message: error.message, error };
 	}
 	res.status(500).json(response);
