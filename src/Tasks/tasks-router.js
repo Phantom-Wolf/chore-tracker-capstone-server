@@ -4,6 +4,7 @@ const express = require("express");
 const xss = require("xss");
 const TasksService = require("./tasks-service");
 const path = require("path");
+const { requireAuth } = require("../middleware/jwt-auth");
 
 // middleware
 
@@ -23,12 +24,19 @@ const serializeTask = (task) => ({
 
 tasksRouter
 	.route("/")
+	.all(requireAuth)
 	.get((req, res, next) => {
 		const knexInstance = req.app.get("db");
-		let event_id = req.event_id;
-		TasksService.getAllTasks(knexInstance, event_id)
-			.then((tasks) => {
-				res.json(tasks.map(serializeTask));
+
+		let user_id = req.user.id;
+
+		TasksService.getAllEvents(knexInstance, user_id)
+			.then((events) => {
+				events.map((event) => {
+					TasksService.getAllTasks(knexInstance, event.id).then((tasks) => {
+						res.json(tasks.map(serializeTask));
+					});
+				});
 			})
 			.catch(next);
 	})
@@ -108,7 +116,6 @@ tasksRouter
 	});
 
 tasksRouter.route("/tasker/:event_id").get((req, res, next) => {
-	console.log(req.params.event_id);
 	const knexInstance = req.app.get("db");
 	TasksService.getAllTasks(knexInstance, req.params.event_id)
 		.then((tasks) => {

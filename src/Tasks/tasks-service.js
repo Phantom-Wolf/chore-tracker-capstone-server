@@ -20,5 +20,8 @@ const TasksService = {
 	updateTask(knex, id, newTaskFields) {
 		return knex.from("tasks").where({ id }).update(newTaskFields);
 	},
+	getAllEvents(knex, id) {
+		return knex.from("events").select("*").where("user_id", id);
+	},
 };
 module.exports = TasksService;
