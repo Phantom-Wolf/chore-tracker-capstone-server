@@ -130,7 +130,6 @@ function setMonthly(date, followingMonthText) {
 		outputMonth = followingMonthNumerical;
 		// if output month is going into the next year, update year as well
 		outputYear = currentYear + 1;
-		
 	}
 
 	// output value will be output year, month and first day of the month
@@ -166,7 +165,6 @@ eventsRouter
 			.catch(next);
 	})
 	.post(requireAuth, jsonParser, (req, res, next) => {
-		
 		const { title, notes, recurrence, recurrence_specifics, date_created } = req.body;
 
 		// translate request body into a newEvent object
@@ -202,11 +200,8 @@ eventsRouter
 		EventsService.insertEvent(req.app.get("db"), newEvent)
 			.then((event) => {
 				// takes the submitted event's reccurence specifics and turn it from a string back into an array
-				// let recurrenceSpecificsSanitized1 = event.recurrence_specifics.replace("[", "");
-				// let recurrenceSpecificsSanitized2 = recurrenceSpecificsSanitized1.replace("]", "");
-				// let recurrenceSpecificsSanitized = recurrenceSpecificsSanitized2.replace(/"/g, "");
-				// let recurrenceSpecificsSanitizedArray = recurrenceSpecificsSanitized.split(",");
 				let recurrenceSpecificsSanitizedArray = JSON.parse(event.recurrence_specifics);
+
 				// currentDate & createDate will be the date the event was created
 				let currentDate = event.date_created;
 				let createDate = event.date_created;
@@ -369,7 +364,6 @@ eventsRouter
 		res.json(serializeEvent(res.event));
 	})
 	.delete((req, res, next) => {
-		
 		EventsService.deleteEvents(req.app.get("db"), req.params.event_id)
 			.then(() => {
 				res.status(204).end();
@@ -395,8 +389,8 @@ eventsRouter
 			date_created,
 			date_ended,
 		};
-		
-		// 
+
+		//
 
 		const numberOfValues = Object.values(eventToUpdate).filter(Boolean).length;
 		if (numberOfValues === 0) {
