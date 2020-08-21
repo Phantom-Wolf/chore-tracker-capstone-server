@@ -23,7 +23,7 @@ app.use(helmet());
 // body
 
 app.get("/", (req, res) => {
-	res.send("Hello, recTask!");
+	res.send("Hello, onTrack!");
 });
 
 app.use("/api/users", usersRouter);

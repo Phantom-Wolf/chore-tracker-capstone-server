@@ -158,6 +158,8 @@ eventsRouter
 
 		let user_id = req.user.id;
 
+		console.log("routerUserId", user_id);
+
 		EventsService.getAllEvents(knexInstance, user_id)
 			.then((events) => {
 				res.json(events.map(serializeEvent));
@@ -175,7 +177,7 @@ eventsRouter
 			recurrence_specifics,
 			date_created,
 		};
-
+		console.log("newEvent", newEvent);
 		// if the given values in newEvent are null(missing), return error message
 		// validation
 		for (const [key, value] of Object.entries(newEvent))
@@ -195,6 +197,8 @@ eventsRouter
 
 		// add user id from header to newEvent object
 		newEvent.user_id = req.user.id;
+
+		console.log("newEvent", newEvent);
 
 		// add Event object into database
 		EventsService.insertEvent(req.app.get("db"), newEvent)
