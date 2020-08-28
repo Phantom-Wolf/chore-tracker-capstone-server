@@ -374,42 +374,6 @@ eventsRouter
 			})
 			.catch(next);
 	})
-	.patch(jsonParser, (req, res, next) => {
-		const {
-			user_id,
-			title,
-			notes,
-			recurrence,
-			recurrence_specifics,
-			date_created,
-			date_ended,
-		} = req.body;
-		const eventToUpdate = {
-			user_id,
-			title,
-			notes,
-			recurrence,
-			recurrence_specifics,
-			date_created,
-			date_ended,
-		};
 
-		//
-
-		const numberOfValues = Object.values(eventToUpdate).filter(Boolean).length;
-		if (numberOfValues === 0) {
-			return res.status(400).json({
-				error: {
-					message: `'Request body is missing values'`,
-				},
-			});
-		}
-
-		// EventsService.updateEvent(req.app.get("db"), req.params.event_id, eventToUpdate)
-		// 	.then((numRowsAffected) => {
-		// 		res.status(204).end();
-		// 	})
-		// 	.catch(next);
-	});
 
 module.exports = eventsRouter;

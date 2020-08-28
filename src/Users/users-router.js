@@ -20,14 +20,6 @@ const serializeUser = (user) => ({
 
 usersRouter
 	.route("/")
-	.get((req, res, next) => {
-		const knexInstance = req.app.get("db");
-		UsersService.getAllUsers(knexInstance)
-			.then((users) => {
-				res.json(users.map(serializeUser));
-			})
-			.catch(next);
-	})
 	.post(jsonParser, (req, res, next) => {
 		const { user_email, user_password } = req.body;
 		const newUser = {
@@ -65,54 +57,6 @@ usersRouter
 							.json(UsersService.serializeUser(user));
 					});
 				});
-			})
-			.catch(next);
-	});
-
-usersRouter
-	.route("/:user_id")
-	.all((req, res, next) => {
-		const knexInstance = req.app.get("db");
-		UsersService.getById(knexInstance, req.params.user_id)
-			.then((user) => {
-				if (!user) {
-					return res.status(404).json({
-						error: {
-							message: `user doesn't exist`,
-						},
-					});
-				}
-				res.user = user;
-				next();
-			})
-			.catch(next);
-	})
-	.get((req, res, next) => {
-		res.json(serializeUser(res.user));
-	})
-	.delete((req, res, next) => {
-		UsersService.deleteUser(req.app.get("db"), req.params.user_id)
-			.then(() => {
-				res.status(204).end();
-			})
-			.catch(next);
-	})
-	.patch(jsonParser, (req, res, next) => {
-		const { user_email, user_password } = req.body;
-		const userToUpdate = { user_email, user_password };
-
-		const numberOfValues = Object.values(userToUpdate).filter(Boolean).length;
-		if (numberOfValues === 0) {
-			return res.status(400).json({
-				error: {
-					message: `Request body must contain 'user_email' or 'user_password'`,
-				},
-			});
-		}
-
-		UsersService.updateUser(req.app.get("db"), req.params.user_id, userToUpdate)
-			.then((numRowsAffected) => {
-				res.status(204).end();
 			})
 			.catch(next);
 	});

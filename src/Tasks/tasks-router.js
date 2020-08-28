@@ -23,51 +23,6 @@ const serializeTask = (task) => ({
 // body
 
 tasksRouter
-	.route("/")
-	.all(requireAuth)
-	.get((req, res, next) => {
-		const knexInstance = req.app.get("db");
-
-		let user_id = req.user.id;
-
-		TasksService.getAllEvents(knexInstance, user_id)
-			.then((events) => {
-				events.map((event) => {
-					TasksService.getAllTasks(knexInstance, event.id).then((tasks) => {
-						res.json(tasks.map(serializeTask));
-					});
-				});
-			})
-			.catch(next);
-	})
-	.post(jsonParser, (req, res, next) => {
-		const { event_id, date_of_task, task_status, task_completion_date } = req.body;
-		const newTask = {
-			event_id,
-			date_of_task,
-			task_status,
-			task_completion_date,
-		};
-
-		for (const [key, value] of Object.entries(newTask))
-			if (value == null)
-				return res.status(400).json({
-					error: {
-						message: `Missing '${key}' in request body`,
-					},
-				});
-
-		TasksService.insertTask(req.app.get("db"), newTask)
-			.then((task) => {
-				res
-					.status(201)
-					.location(path.posix.join(req.originalUrl, `/${task.id}`))
-					.json(serializeTask(task));
-			})
-			.catch(next);
-	});
-
-tasksRouter
 	.route("/:task_id")
 	.all((req, res, next) => {
 		const knexInstance = req.app.get("db");
@@ -82,16 +37,6 @@ tasksRouter
 				}
 				res.task = task;
 				next();
-			})
-			.catch(next);
-	})
-	.get((req, res, next) => {
-		res.json(serializeTask(res.task));
-	})
-	.delete((req, res, next) => {
-		TasksService.deleteTask(req.app.get("db"), req.params.task_id)
-			.then(() => {
-				res.status(204).end();
 			})
 			.catch(next);
 	})

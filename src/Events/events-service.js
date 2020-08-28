@@ -14,14 +14,8 @@ const EventsService = {
 	getById(knex, id) {
 		return knex.from("events").select("*").where("id", id).first();
 	},
-	deleteTasks(knex, id) {
-		return knex.from("tasks").select("*").where("event_id", id).delete();
-	},
 	deleteEvents(knex, id) {
 		return knex.from("events").where({ id }).delete();
-	},
-	updateEvent(knex, id, newEventFields) {
-		return knex.from("events").where({ id }).update(newEventFields);
 	},
 };
 module.exports = EventsService;

@@ -14,14 +14,8 @@ const TasksService = {
 	getById(knex, id) {
 		return knex.from("tasks").select("*").where("id", id).first();
 	},
-	deleteTask(knex, id) {
-		return knex.from("tasks").where({ id }).delete();
-	},
 	updateTask(knex, id, newTaskFields) {
 		return knex.from("tasks").where({ id }).update(newTaskFields);
-	},
-	getAllEvents(knex, id) {
-		return knex.from("events").select("*").where("user_id", id);
 	},
 };
 module.exports = TasksService;
