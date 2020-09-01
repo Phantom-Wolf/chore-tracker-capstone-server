@@ -25,18 +25,18 @@ When your new project is ready for deployment, add a new Heroku application with
 
 onTrack: A web application that makes tracking reoccuring tasks easy.
 
-## Summary
+## Working Prototype
+
+You can access a working prototype of the connected client app here: https://chore-tracker-capstone-client.vercel.app/Landing
+
+### Summary
 
 onTrack is a task tracking web application. It allows users to maintain all of their repeating everyday responisibilities.
 Tasks can be separated by weekdays, weeks of the month or months. Additionally, an end date can be added and any desired notes.
 
-## Connected Client Repository
+### Connected Client Repository
 
 Link: https://github.com/Phantom-Wolf/chore-tracker-capstone-client
-
-## Working Prototype
-
-You can access a working prototype of the connected client app here: https://chore-tracker-capstone-client.vercel.app/Landing
 
 ### ScreenShots from Connected Front-End Client
 
