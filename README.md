@@ -42,9 +42,9 @@ Link: https://github.com/Phantom-Wolf/chore-tracker-capstone-client
 
 Landing/Register Page
 :-------------------------:
-![Landing/Register Page](/github-images/wireframes/onTrack-Landing.png)
+![Landing/Register Page](/github-images/wireframes/onTrack-Landing2.png)
 Login Page
-![Login Page](/github-images/wireframes/onTrack-Login.png)
+![Login Page](/github-images/wireframes/onTrack-Login2.png)
 Dashboard
 ![Home/Dashboard](/github-images/wireframes/onTrack-Dashboard.png)
 Category Page/Weekdays
